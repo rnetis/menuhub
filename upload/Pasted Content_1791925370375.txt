@@ -1,0 +1,2614 @@
+# Product Requirements Document
+## Bilingual Online Menu SaaS
+
+**Product Type:** Multi-tenant SaaS  
+**Primary Languages:** Persian (RTL) + English (LTR)  
+**Target Businesses:** Restaurants, cafés, fast-food restaurants, bakeries, juice bars, hotels, food courts, catering businesses, and similar food-service businesses  
+**Platforms:** Web, PWA, Mobile Web  
+**Primary Access Method:** QR Code + direct URL  
+**Architecture:** Multi-tenant SaaS  
+**Initial Deployment:** Single-instance capable, horizontally scalable
+
+---
+
+# 1. Product Vision
+
+Create a modern SaaS platform that allows food-service businesses to create, manage, customize, and publish a professional online menu without requiring technical knowledge.
+
+Each business receives its own public menu URL and QR code.
+
+Example:
+
+```text
+https://menu.example.com/cafe-nova
+```
+
+Customers scan the QR code at the table and immediately see the restaurant's menu.
+
+The system must support:
+
+- Persian and English content
+- RTL/LTR interfaces
+- Categories and menu items
+- Images
+- Prices
+- Variants
+- Add-ons
+- Availability
+- Dietary information
+- Search
+- Featured items
+- Promotional items
+- Restaurant branding
+- QR codes
+- Analytics
+- Multi-tenant administration
+- Multiple branches
+- Role-based access control
+
+The product should feel closer to a **digital storefront** than a simple PDF menu.
+
+---
+
+# 2. Problem Statement
+
+Traditional restaurant menus have several problems:
+
+- Printing is expensive.
+- Price changes require reprinting.
+- Customers cannot easily switch languages.
+- PDF menus are often difficult to navigate on mobile.
+- Menu images may be low quality.
+- Restaurants have no useful analytics.
+- Different branches may have different menus.
+- Updating availability is inconvenient.
+- QR-code menus are often visually poor.
+- Restaurants usually need a developer to make significant changes.
+
+The SaaS should solve these problems with a simple management dashboard and a fast mobile-first customer experience.
+
+---
+
+# 3. Goals
+
+## Primary Goals
+
+1. Allow a business to create a digital menu in minutes.
+2. Allow menu content to exist independently in Persian and English.
+3. Provide automatic RTL/LTR rendering.
+4. Provide a mobile-first customer experience.
+5. Generate QR codes automatically.
+6. Allow restaurants to update prices and availability instantly.
+7. Support multiple branches.
+8. Support restaurant branding.
+9. Provide basic analytics.
+10. Provide subscription-based SaaS billing.
+11. Support future languages without redesigning the data model.
+
+## Secondary Goals
+
+- PWA installation
+- SEO-friendly public menus
+- Social sharing
+- WhatsApp/Telegram sharing
+- Table-specific QR codes
+- Promotional campaigns
+- Ordering integration in future versions
+- POS integration
+- Digital signage
+
+---
+
+# 4. Non-Goals
+
+The first version should NOT attempt to become a complete restaurant POS.
+
+Out of scope for MVP:
+
+- Full accounting
+- Inventory management
+- Kitchen Display System
+- Employee payroll
+- Delivery fleet management
+- Payment processing
+- Full online ordering
+- Reservation management
+- Loyalty program
+- Advanced CRM
+
+These can become future modules.
+
+---
+
+# 5. Target Users
+
+## 5.1 Restaurant Owner
+
+Needs:
+
+- Create restaurant
+- Configure branding
+- Manage menu
+- Manage prices
+- Upload images
+- Generate QR codes
+- View analytics
+- Manage employees
+- Manage subscription
+
+---
+
+## 5.2 Restaurant Manager
+
+Needs:
+
+- Update menu
+- Enable/disable products
+- Change prices
+- Manage categories
+- Manage promotions
+- View analytics
+
+---
+
+## 5.3 Menu Editor
+
+Needs:
+
+- Edit descriptions
+- Upload images
+- Translate items
+- Organize categories
+- Configure variants
+
+---
+
+## 5.4 Customer
+
+Needs:
+
+- Open menu quickly
+- Select language
+- Browse categories
+- Search items
+- View images
+- View prices
+- See unavailable items
+- Read descriptions
+- Understand allergens/dietary information
+- Share menu/items
+
+No account should be required.
+
+---
+
+## 5.5 Platform Administrator
+
+Needs:
+
+- Manage tenants
+- Manage subscriptions
+- Manage plans
+- Manage users
+- Manage domains
+- View system analytics
+- Suspend tenants
+- Manage platform configuration
+
+---
+
+# 6. Core Product Concept
+
+Every restaurant is a **Tenant**.
+
+Example:
+
+```text
+Platform
+│
+├── Restaurant A
+│   ├── Branch Tehran
+│   ├── Branch Shiraz
+│   └── Menu
+│
+├── Restaurant B
+│   └── Branch Dubai
+│
+└── Restaurant C
+    └── Branch Yerevan
+```
+
+Each tenant has isolated:
+
+- Users
+- Menu
+- Categories
+- Items
+- Media
+- Branches
+- Settings
+- Branding
+- Analytics
+- Subscription
+
+---
+
+# 7. Public Menu
+
+Example URL:
+
+```text
+menu.example.com/cafe-nova
+```
+
+Optional custom domain:
+
+```text
+menu.cafenova.com
+```
+
+## Customer Flow
+
+```text
+Scan QR
+   ↓
+Open Menu
+   ↓
+Detect preferred language
+   ↓
+Display restaurant branding
+   ↓
+Select language if necessary
+   ↓
+Browse categories
+   ↓
+Open item
+   ↓
+View details
+```
+
+---
+
+# 8. Language System
+
+The application supports two languages in MVP:
+
+### Persian
+
+```text
+fa-IR
+RTL
+```
+
+### English
+
+```text
+en-US
+LTR
+```
+
+The architecture MUST support additional languages later.
+
+Example:
+
+```text
+fa
+en
+ar
+tr
+de
+ru
+```
+
+---
+
+# 9. Bilingual Content Model
+
+Every translatable entity should store language-specific fields.
+
+Example:
+
+```json
+{
+  "name": {
+    "fa": "چیزبرگر",
+    "en": "Cheeseburger"
+  },
+  "description": {
+    "fa": "برگر گوشت با پنیر چدار",
+    "en": "Beef burger with cheddar cheese"
+  }
+}
+```
+
+Do NOT create separate products for each language.
+
+Instead:
+
+```text
+MenuItem
+ ├── name.fa
+ ├── name.en
+ ├── description.fa
+ └── description.en
+```
+
+This keeps both language versions tied to the same product.
+
+---
+
+# 10. Language Fallback
+
+If English content is unavailable:
+
+```text
+English request
+      ↓
+English content exists?
+      ↓
+YES → English
+NO
+      ↓
+Fallback to Persian
+```
+
+The fallback behavior should be configurable by the tenant.
+
+---
+
+# 11. Menu Structure
+
+Recommended hierarchy:
+
+```text
+Restaurant
+    ↓
+Menu
+    ↓
+Category
+    ↓
+Subcategory
+    ↓
+Menu Item
+    ↓
+Variant / Add-on
+```
+
+Example:
+
+```text
+🍔 Burgers
+   ├── Classic Burger
+   ├── Cheeseburger
+   └── Double Burger
+
+🍕 Pizza
+   ├── Margherita
+   ├── Pepperoni
+   └── Chicken Pizza
+
+🥤 Drinks
+   ├── Coca Cola
+   ├── Fresh Orange Juice
+   └── Water
+```
+
+---
+
+# 12. Menu Categories
+
+Each category supports:
+
+- Persian name
+- English name
+- Description
+- Image
+- Icon
+- Sort order
+- Visibility
+- Active/inactive state
+
+Example:
+
+```text
+Category
+-------------------------
+name_fa
+name_en
+description_fa
+description_en
+image
+icon
+sort_order
+is_active
+```
+
+Categories can be reordered using drag-and-drop.
+
+---
+
+# 13. Menu Items
+
+Each menu item supports:
+
+### Basic Information
+
+- Persian name
+- English name
+- Persian description
+- English description
+- Main image
+- Gallery
+- SKU/internal code
+- Category
+
+### Pricing
+
+- Base price
+- Compare-at price
+- Promotional price
+- Currency
+
+### Status
+
+- Available
+- Unavailable
+- Hidden
+- Featured
+
+### Attributes
+
+- Vegetarian
+- Vegan
+- Spicy
+- Halal
+- Gluten-free
+- Contains nuts
+- Contains dairy
+- Contains egg
+- Custom tags
+
+---
+
+# 14. Product Variants
+
+A product can have multiple variants.
+
+Example:
+
+```text
+Pizza
+ ├── Small       €8
+ ├── Medium      €11
+ └── Large       €14
+```
+
+Variant model:
+
+```text
+Variant
+├── name
+├── price
+├── compare_price
+├── is_available
+└── sort_order
+```
+
+---
+
+# 15. Add-ons
+
+Example:
+
+```text
+Cheeseburger
+
+Add-ons:
+
+Extra Cheese       +€1
+Bacon              +€2
+Fried Egg          +€1
+Extra Sauce        +€0.50
+```
+
+Add-ons may support:
+
+- Required/optional
+- Minimum selection
+- Maximum selection
+- Price modifier
+- Availability
+
+---
+
+# 16. Pricing
+
+The system must support:
+
+- Multiple currencies
+- Decimal prices
+- Currency symbol/code
+- Optional tax display
+- Optional service charge
+
+Example:
+
+```text
+€12.50
+$12.50
+12.50 د.ت
+```
+
+Currency should be stored as ISO currency codes rather than hardcoded symbols.
+
+---
+
+# 17. Availability
+
+Menu items can be controlled dynamically.
+
+Statuses:
+
+```text
+AVAILABLE
+UNAVAILABLE
+HIDDEN
+SCHEDULED
+```
+
+Example:
+
+```text
+Breakfast
+07:00 → 12:00
+```
+
+The item automatically becomes unavailable outside its schedule.
+
+Future versions may support:
+
+- Branch-specific availability
+- Day-specific availability
+- Inventory-driven availability
+
+---
+
+# 18. Restaurant Branding
+
+Each tenant can customize:
+
+- Logo
+- Cover image
+- Primary color
+- Secondary color
+- Background
+- Typography
+- Button style
+- Border radius
+- Menu layout
+- Card layout
+
+Predefined themes should be available.
+
+Example:
+
+```text
+Classic
+Modern
+Minimal
+Luxury
+Dark
+Cafe
+Fast Food
+```
+
+---
+
+# 19. Menu Themes
+
+Instead of allowing unrestricted CSS customization initially, provide controlled themes.
+
+Example:
+
+```text
+Theme
+├── layout
+├── colors
+├── typography
+├── card_style
+├── button_style
+└── navigation_style
+```
+
+This keeps the public menu performant and consistent.
+
+---
+
+# 20. QR Code System
+
+Every menu receives a QR code.
+
+Example:
+
+```text
+https://menu.example.com/cafe-nova
+```
+
+QR code options:
+
+- PNG
+- SVG
+- PDF
+- Printable version
+
+QR codes can include branding.
+
+Example:
+
+```text
+SCAN TO VIEW MENU
+
+[ QR CODE ]
+
+اسکن کنید
+```
+
+---
+
+# 21. Table QR Codes
+
+Future/Premium functionality.
+
+Each table can have a unique URL:
+
+```text
+/menu/cafe-nova/table/01
+/menu/cafe-nova/table/02
+/menu/cafe-nova/table/03
+```
+
+This enables future:
+
+- Table ordering
+- Table analytics
+- Waiter calling
+- Table-specific promotions
+
+---
+
+# 22. Dashboard
+
+The restaurant dashboard should contain:
+
+```text
+Dashboard
+│
+├── Overview
+├── Menu
+│   ├── Categories
+│   ├── Items
+│   ├── Variants
+│   └── Add-ons
+│
+├── Media
+├── QR Codes
+├── Branches
+├── Branding
+├── Analytics
+├── Team
+├── Settings
+└── Subscription
+```
+
+---
+
+# 23. Dashboard Overview
+
+Display:
+
+- Menu views today
+- Menu views this week
+- Most viewed item
+- Most viewed category
+- Language distribution
+- QR scans
+- Active branches
+- Current subscription
+- Recent activity
+
+Example:
+
+```text
+Today's Views
+1,248
+
+Persian
+72%
+
+English
+28%
+
+Most Viewed
+Cheeseburger
+```
+
+---
+
+# 24. Menu Editor
+
+The editor should be highly visual.
+
+Example:
+
+```text
+Categories
+
+☰ Burgers
+☰ Pizza
+☰ Drinks
+☰ Desserts
+
+[ + Add Category ]
+```
+
+Opening a category:
+
+```text
+Burgers
+
+☰ Classic Burger
+☰ Cheeseburger
+☰ Double Burger
+
+[ + Add Item ]
+```
+
+Items should support drag-and-drop ordering.
+
+---
+
+# 25. Item Editor
+
+Example:
+
+```text
+--------------------------------
+Menu Item
+--------------------------------
+
+Persian
+Name:
+[ چیزبرگر ]
+
+Description:
+[ برگر گوشت با پنیر چدار ]
+
+English
+Name:
+[ Cheeseburger ]
+
+Description:
+[ Beef burger with cheddar cheese ]
+
+Price:
+[ 12.50 ]
+
+Image:
+[ Upload ]
+
+Availability:
+[ ✓ Available ]
+
+[ Save ]
+--------------------------------
+```
+
+A split-screen preview should be available on desktop.
+
+---
+
+# 26. Media Management
+
+Central media library.
+
+Features:
+
+- Upload
+- Delete
+- Search
+- Rename
+- Crop
+- Optimize
+- WebP/AVIF conversion
+- Multiple sizes
+- Alt text
+
+Images should automatically be optimized for mobile.
+
+Recommended image pipeline:
+
+```text
+Upload
+ ↓
+Validate
+ ↓
+Resize
+ ↓
+Compress
+ ↓
+Generate WebP/AVIF
+ ↓
+Store
+ ↓
+CDN
+```
+
+---
+
+# 27. Search
+
+Customer-facing search should search:
+
+- Item name
+- Description
+- Category
+- Tags
+
+Search must work in both Persian and English.
+
+Example:
+
+Searching:
+
+```text
+burger
+```
+
+should find:
+
+```text
+Cheeseburger
+Chicken Burger
+Double Burger
+```
+
+Persian search:
+
+```text
+برگر
+```
+
+should find the equivalent Persian products.
+
+---
+
+# 28. Persian Search Requirements
+
+The search engine should normalize common Persian/Arabic differences.
+
+For example:
+
+```text
+ي → ی
+ك → ک
+```
+
+It should also normalize:
+
+- Zero-width non-joiners
+- Arabic/Persian numerals
+- Diacritics
+- Common whitespace differences
+
+---
+
+# 29. Customer UX
+
+The public menu must be:
+
+- Mobile-first
+- Extremely fast
+- Touch-friendly
+- No login required
+- Minimal JavaScript
+- Accessible
+- SEO-friendly
+
+Initial page should ideally load within approximately:
+
+```text
+< 2 seconds
+```
+
+on a normal mobile connection.
+
+---
+
+# 30. Public Menu Layout
+
+Recommended structure:
+
+```text
+┌───────────────────────────┐
+│          LOGO             │
+│      Cafe Nova            │
+│                           │
+│    [ فارسی | English ]    │
+├───────────────────────────┤
+│ Categories                │
+│                           │
+│ Burgers | Pizza | Drinks  │
+├───────────────────────────┤
+│                           │
+│ 🍔 Cheeseburger           │
+│ Beef + cheddar             │
+│ €12.50                    │
+│                           │
+│ 🍔 Double Burger           │
+│ €15.00                    │
+│                           │
+└───────────────────────────┘
+```
+
+---
+
+# 31. Responsive Design
+
+Must support:
+
+- Mobile
+- Tablet
+- Desktop
+
+Breakpoints should be responsive rather than device-specific.
+
+The mobile menu is the primary experience.
+
+---
+
+# 32. PWA
+
+The public menu should optionally behave as a PWA.
+
+Features:
+
+- Installable
+- App icon
+- Splash screen
+- Offline cached menu
+- Service worker
+- Cache-first static assets
+
+If enabled, recently visited menus can remain partially available offline.
+
+---
+
+# 33. SEO
+
+Each public menu should generate:
+
+- Semantic HTML
+- Metadata
+- Open Graph tags
+- Twitter/X card metadata
+- Structured data
+
+Recommended Schema.org types:
+
+```text
+Restaurant
+Menu
+MenuSection
+MenuItem
+```
+
+Example structured data:
+
+```json
+{
+  "@type": "MenuItem",
+  "name": "Cheeseburger",
+  "offers": {
+    "@type": "Offer",
+    "price": "12.50",
+    "priceCurrency": "EUR"
+  }
+}
+```
+
+---
+
+# 34. Custom Domains
+
+Premium feature.
+
+Example:
+
+```text
+menu.cafenova.com
+```
+
+The platform must support:
+
+- Domain verification
+- DNS instructions
+- SSL
+- Automatic certificate provisioning
+- Tenant routing
+
+Architecture:
+
+```text
+Request
+ ↓
+Domain Resolver
+ ↓
+Tenant Resolver
+ ↓
+Tenant Menu
+```
+
+---
+
+# 35. Multi-Branch Support
+
+A business can have multiple branches.
+
+Example:
+
+```text
+Cafe Nova
+
+Branches:
+├── Downtown
+├── Airport
+└── Mall
+```
+
+Each branch can have:
+
+- Address
+- Phone
+- Opening hours
+- Location
+- Menu
+- Availability
+- QR codes
+
+The tenant can choose:
+
+```text
+Shared menu
+```
+
+or:
+
+```text
+Branch-specific menu
+```
+
+---
+
+# 36. Opening Hours
+
+Support:
+
+- Weekly schedule
+- Multiple intervals
+- Holidays
+- Temporary closure
+
+Example:
+
+```text
+Saturday
+09:00 - 14:00
+17:00 - 23:00
+```
+
+Public menu may display:
+
+```text
+● Open now
+```
+
+or:
+
+```text
+● Closed
+Opens at 17:00
+```
+
+---
+
+# 37. Analytics
+
+MVP analytics:
+
+- Total views
+- Unique visitors
+- QR scans
+- Language usage
+- Most viewed categories
+- Most viewed products
+- Views by day
+- Views by hour
+- Device type
+- Referrer
+
+Example:
+
+```text
+Menu Views
+───────────────
+Mon   █████
+Tue   ███████
+Wed   █████████
+Thu   ██████
+Fri   ███████████
+```
+
+Privacy should be prioritized.
+
+Avoid unnecessary collection of personally identifiable information.
+
+---
+
+# 38. Role-Based Access Control
+
+Roles:
+
+```text
+OWNER
+ADMIN
+MANAGER
+EDITOR
+VIEWER
+```
+
+Example:
+
+| Permission | Owner | Admin | Manager | Editor | Viewer |
+|---|---:|---:|---:|---:|---:|
+| Menu | ✓ | ✓ | ✓ | ✓ | Read |
+| Branding | ✓ | ✓ | ✓ | — | — |
+| Analytics | ✓ | ✓ | ✓ | Read | Read |
+| Team | ✓ | ✓ | — | — | — |
+| Billing | ✓ | — | — | — | — |
+| Delete Tenant | ✓ | — | — | — | — |
+
+---
+
+# 39. Authentication
+
+Support:
+
+- Email/password
+- Magic link
+- OAuth in future
+- Password reset
+- Email verification
+- Session management
+- 2FA in future
+
+Users belong to tenants through memberships.
+
+Recommended model:
+
+```text
+User
+   ↓
+Membership
+   ↓
+Tenant
+```
+
+This allows one user to manage multiple businesses.
+
+---
+
+# 40. Data Model
+
+Core entities:
+
+```text
+User
+Tenant
+Membership
+Subscription
+Plan
+
+Branch
+
+Menu
+Category
+MenuItem
+MenuItemTranslation
+Variant
+AddOn
+Tag
+
+Media
+QRCode
+
+Theme
+ThemeConfiguration
+
+AnalyticsEvent
+
+Domain
+OpeningHour
+Holiday
+```
+
+---
+
+# 41. Suggested Database Structure
+
+Example:
+
+```text
+tenants
+---------
+id
+name
+slug
+logo_id
+theme_id
+default_language
+created_at
+updated_at
+```
+
+```text
+menu_items
+-----------
+id
+tenant_id
+category_id
+base_price
+currency
+status
+sort_order
+created_at
+updated_at
+```
+
+```text
+menu_item_translations
+----------------------
+id
+menu_item_id
+locale
+name
+description
+```
+
+Constraint:
+
+```text
+UNIQUE(menu_item_id, locale)
+```
+
+This structure makes future languages straightforward.
+
+---
+
+# 42. Tenant Isolation
+
+Every tenant-owned entity must contain a tenant relationship.
+
+Example:
+
+```text
+menu_items.tenant_id
+categories.tenant_id
+branches.tenant_id
+media.tenant_id
+```
+
+Application-level authorization must ensure:
+
+```text
+current_user.tenant_id
+==
+resource.tenant_id
+```
+
+For PostgreSQL deployments, Row-Level Security may be considered for an additional isolation layer.
+
+---
+
+# 43. API Architecture
+
+Recommended architecture:
+
+```text
+Frontend
+   ↓
+API
+   ↓
+Application Services
+   ↓
+Database
+   ↓
+Object Storage
+```
+
+API should be versioned:
+
+```text
+/api/v1/
+```
+
+Example endpoints:
+
+```text
+GET    /api/v1/menu/:slug
+GET    /api/v1/categories
+POST   /api/v1/categories
+PATCH  /api/v1/categories/:id
+DELETE /api/v1/categories/:id
+
+GET    /api/v1/items
+POST   /api/v1/items
+PATCH  /api/v1/items/:id
+DELETE /api/v1/items/:id
+```
+
+---
+
+# 44. Public API
+
+Public menu API should be optimized separately from the administration API.
+
+Example:
+
+```text
+GET /api/v1/public/menus/:slug
+```
+
+Response:
+
+```json
+{
+  "restaurant": {},
+  "theme": {},
+  "categories": [],
+  "items": [],
+  "branches": []
+}
+```
+
+Responses should be cacheable.
+
+---
+
+# 45. Caching
+
+Public menu data is highly cacheable.
+
+Recommended:
+
+```text
+Browser Cache
+      ↓
+CDN
+      ↓
+Redis
+      ↓
+Application
+      ↓
+PostgreSQL
+```
+
+Menu changes should invalidate relevant caches.
+
+---
+
+# 46. Performance
+
+Targets:
+
+### Public Menu
+
+```text
+LCP < 2.5s
+CLS < 0.1
+INP < 200ms
+```
+
+### API
+
+Typical menu read:
+
+```text
+p95 < 300ms
+```
+
+### Image delivery
+
+Use:
+
+```text
+AVIF
+WebP
+responsive sizes
+lazy loading
+```
+
+---
+
+# 47. Security
+
+Required:
+
+- HTTPS
+- Secure cookies
+- CSRF protection where applicable
+- Rate limiting
+- Input validation
+- Output encoding
+- SQL injection protection
+- XSS protection
+- File upload validation
+- MIME validation
+- Authorization on every tenant resource
+- Audit logging
+- Password hashing using Argon2id or equivalent
+
+Admin APIs must never rely solely on frontend authorization.
+
+---
+
+# 48. Audit Log
+
+Record important actions:
+
+```text
+User
+Action
+Resource
+Timestamp
+IP
+Metadata
+```
+
+Example:
+
+```text
+Admin changed Cheeseburger price
+€10 → €12.50
+```
+
+This is especially important for multi-user restaurant accounts.
+
+---
+
+# 49. Subscription System
+
+Suggested plans:
+
+## Free
+
+```text
+1 branch
+Basic menu
+QR code
+Basic themes
+Limited items
+Platform branding
+```
+
+## Starter
+
+```text
+Multiple categories
+Unlimited items
+Custom branding
+Analytics
+Remove platform branding
+```
+
+## Business
+
+```text
+Multiple branches
+Custom domain
+Advanced analytics
+Team members
+Advanced themes
+Priority support
+```
+
+## Enterprise
+
+```text
+Unlimited branches
+Custom deployment
+API access
+Advanced RBAC
+SLA
+Dedicated support
+```
+
+Exact pricing should be configurable from the admin panel.
+
+---
+
+# 50. Subscription Enforcement
+
+Features should be controlled through entitlements rather than hardcoded plan checks.
+
+Example:
+
+```text
+Feature:
+custom_domain
+
+Tenant entitlement:
+true
+```
+
+This allows future plans without rewriting business logic.
+
+---
+
+# 51. Platform Admin Panel
+
+Platform administrators can:
+
+- View tenants
+- Search tenants
+- Suspend tenants
+- Change plans
+- View subscriptions
+- View usage
+- Manage plans
+- Manage feature flags
+- Manage custom domains
+- View system health
+- View audit logs
+
+---
+
+# 52. Onboarding
+
+New tenant flow:
+
+```text
+Sign Up
+ ↓
+Verify Email
+ ↓
+Create Business
+ ↓
+Choose Business Type
+ ↓
+Choose Language
+ ↓
+Choose Theme
+ ↓
+Create First Category
+ ↓
+Create First Item
+ ↓
+Generate QR
+ ↓
+Publish
+```
+
+Target:
+
+```text
+First published menu < 5 minutes
+```
+
+---
+
+# 53. Import System
+
+MVP should support simple bulk import.
+
+Supported:
+
+```text
+CSV
+Excel
+```
+
+Example:
+
+```text
+category,name_fa,name_en,description_fa,description_en,price,currency
+Burgers,چیزبرگر,Cheeseburger,...,12.5,EUR
+```
+
+Import wizard:
+
+```text
+Upload
+ ↓
+Detect columns
+ ↓
+Preview
+ ↓
+Validate
+ ↓
+Import
+```
+
+---
+
+# 54. Export
+
+Allow businesses to export:
+
+- Menu CSV
+- Menu JSON
+- Menu PDF
+- Menu backup
+
+A complete tenant backup should eventually contain:
+
+```text
+Menu
+Categories
+Items
+Translations
+Variants
+Add-ons
+Settings
+Theme
+```
+
+---
+
+# 55. Notifications
+
+Optional notification system:
+
+- Subscription expiration
+- Payment failure
+- Domain verification
+- Team invitation
+- Menu publishing
+- Import completion
+
+Channels:
+
+```text
+Email
+In-app
+SMS (future)
+```
+
+---
+
+# 56. Internationalization Architecture
+
+Frontend must not hardcode language strings.
+
+Use:
+
+```text
+i18n.t("menu.add_item")
+```
+
+Example:
+
+```text
+fa.json
+en.json
+```
+
+Application UI translations are separate from restaurant menu translations.
+
+This distinction is important:
+
+```text
+Platform Translation
+        +
+Restaurant Content Translation
+```
+
+---
+
+# 57. RTL Requirements
+
+Persian interface must support:
+
+```css
+direction: rtl;
+```
+
+But the system should NOT simply mirror everything.
+
+Elements such as:
+
+- numbers
+- prices
+- phone numbers
+- email
+- URLs
+- maps
+- technical identifiers
+
+may need LTR rendering.
+
+Use logical CSS properties:
+
+```css
+margin-inline-start
+padding-inline
+border-start-start-radius
+```
+
+rather than:
+
+```css
+margin-left
+padding-right
+```
+
+where appropriate.
+
+---
+
+# 58. Accessibility
+
+Target:
+
+```text
+WCAG 2.2 AA
+```
+
+Requirements:
+
+- Keyboard navigation
+- Proper contrast
+- Focus states
+- Semantic HTML
+- Alt text
+- Screen-reader labels
+- Accessible buttons
+- Accessible language switcher
+- Reduced-motion support
+
+---
+
+# 59. Technology Recommendation
+
+A modern implementation could use:
+
+### Frontend
+
+```text
+React / Vue / Svelte
+TypeScript
+Tailwind CSS
+PWA
+```
+
+### Backend
+
+```text
+Node.js
+TypeScript
+PostgreSQL
+Redis
+```
+
+### Storage
+
+```text
+S3-compatible object storage
+```
+
+### CDN
+
+```text
+Cloudflare
+```
+
+### Authentication
+
+```text
+OAuth/OIDC-compatible architecture
+```
+
+### Deployment
+
+```text
+Docker
+```
+
+The exact stack can be changed without affecting the PRD.
+
+---
+
+# 60. Recommended Architecture
+
+```text
+                    ┌───────────────┐
+                    │   Customer    │
+                    │ Mobile / PWA  │
+                    └───────┬───────┘
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │ CDN / Edge    │
+                    └───────┬───────┘
+                            │
+                ┌───────────┴───────────┐
+                ▼                       ▼
+       ┌────────────────┐      ┌────────────────┐
+       │ Public Menu API│      │ Admin Web App   │
+       └───────┬────────┘      └───────┬────────┘
+               │                       │
+               └───────────┬───────────┘
+                           ▼
+                  ┌─────────────────┐
+                  │ Application API │
+                  └────────┬────────┘
+                           │
+             ┌─────────────┼─────────────┐
+             ▼             ▼             ▼
+        PostgreSQL       Redis       Object Storage
+```
+
+---
+
+# 61. Public Menu Rendering Strategy
+
+Prefer server-side rendering or static/hybrid rendering for public menus.
+
+Ideal flow:
+
+```text
+QR
+ ↓
+Edge
+ ↓
+Cached HTML
+ ↓
+Instant menu
+ ↓
+Hydrate interactive features
+```
+
+This provides better:
+
+- Performance
+- SEO
+- Social sharing
+- Low-end device compatibility
+
+---
+
+# 62. Menu Publishing Model
+
+Instead of exposing draft changes immediately, support:
+
+```text
+Draft
+   ↓
+Preview
+   ↓
+Publish
+   ↓
+Live
+```
+
+Restaurant managers can safely edit a menu without customers seeing incomplete changes.
+
+Optional future feature:
+
+```text
+Schedule publication
+```
+
+Example:
+
+```text
+Publish new menu
+Friday 18:00
+```
+
+---
+
+# 63. Versioning
+
+Menu versions should eventually be supported.
+
+Example:
+
+```text
+Version 12
+Version 13
+Version 14
+```
+
+Allow:
+
+```text
+View version
+Restore version
+Compare versions
+```
+
+This protects restaurants from accidental changes.
+
+---
+
+# 64. Promotions
+
+Future module:
+
+```text
+Promotion
+├── Discount
+├── Badge
+├── Featured
+├── Limited Time
+└── New
+```
+
+Example:
+
+```text
+🔥 20% OFF
+```
+
+Promotions may have:
+
+```text
+start_at
+end_at
+```
+
+---
+
+# 65. Customer Feedback
+
+Future module:
+
+Customers can optionally rate:
+
+```text
+Food
+Service
+Menu
+```
+
+But feedback should be carefully designed to prevent abuse.
+
+Potential feature:
+
+```text
+How was your experience?
+
+☆ ☆ ☆ ☆ ☆
+```
+
+---
+
+# 66. Future Online Ordering
+
+The data model should not prevent future ordering.
+
+Potential architecture:
+
+```text
+Menu
+ ↓
+Cart
+ ↓
+Order
+ ↓
+Payment
+ ↓
+Kitchen
+ ↓
+Completed
+```
+
+The MVP menu system should therefore keep menu items and variants cleanly separated from presentation.
+
+---
+
+# 67. Future POS Integration
+
+Potential integrations:
+
+```text
+POS
+ERP
+Payment Terminal
+Kitchen Display
+Inventory
+Delivery
+```
+
+API-first design should make these integrations possible.
+
+---
+
+# 68. QR Analytics
+
+Each QR code should optionally have its own identifier.
+
+Example:
+
+```text
+Table 01
+Table 02
+Entrance
+Takeaway Counter
+Instagram
+```
+
+This allows:
+
+```text
+QR Source
+    ↓
+Analytics
+```
+
+Example:
+
+```text
+Table 12       420 scans
+Instagram      180 scans
+Google         95 scans
+Entrance       75 scans
+```
+
+---
+
+# 69. Business Metrics
+
+Platform KPIs:
+
+```text
+Number of tenants
+Active tenants
+Published menus
+Monthly active menus
+Menu views
+QR scans
+Paid conversion
+MRR
+Churn
+Average revenue per tenant
+```
+
+Product KPIs:
+
+```text
+Time to first menu
+Time to first published menu
+Menu creation completion rate
+Item creation completion rate
+Language usage
+Mobile performance
+```
+
+---
+
+# 70. MVP Scope
+
+The MVP should contain only the features necessary to validate the product.
+
+### Must Have
+
+- Authentication
+- Multi-tenancy
+- Restaurant profile
+- Categories
+- Menu items
+- Persian/English translations
+- Images
+- Prices
+- Availability
+- Public menu
+- Language switching
+- RTL/LTR
+- QR generation
+- Basic branding
+- Basic dashboard
+- Basic analytics
+- Team roles
+- Subscription foundation
+
+### Should Have
+
+- Variants
+- Add-ons
+- Multiple branches
+- Import CSV
+- PWA
+- SEO
+- Custom themes
+
+### Could Have
+
+- Custom domain
+- Scheduled availability
+- Advanced analytics
+- Menu versioning
+- PDF export
+- Table QR codes
+
+### Won't Have in MVP
+
+- Ordering
+- Payments
+- POS
+- Inventory
+- Accounting
+- Reservations
+- Delivery
+
+---
+
+# 71. MVP Customer Journey
+
+```text
+QR Scan
+  ↓
+Public Menu
+  ↓
+Language Selection
+  ↓
+Browse Categories
+  ↓
+Open Product
+  ↓
+View Image / Price / Description
+  ↓
+Return to Menu
+```
+
+No registration.
+
+No login.
+
+No unnecessary popup.
+
+---
+
+# 72. MVP Restaurant Journey
+
+```text
+Register
+ ↓
+Create Restaurant
+ ↓
+Choose Theme
+ ↓
+Create Category
+ ↓
+Create Menu Item
+ ↓
+Add Persian Content
+ ↓
+Add English Content
+ ↓
+Upload Image
+ ↓
+Set Price
+ ↓
+Publish
+ ↓
+Generate QR
+```
+
+---
+
+# 73. Acceptance Criteria
+
+## Restaurant
+
+A restaurant owner can:
+
+- Register
+- Create a restaurant
+- Create categories
+- Create menu items
+- Add Persian content
+- Add English content
+- Upload images
+- Change prices
+- Disable items
+- Reorder items
+- Publish menu
+- Generate QR code
+
+---
+
+## Customer
+
+A customer can:
+
+- Open menu without login
+- Switch Persian/English
+- Browse categories
+- Search menu
+- View item details
+- View prices
+- See unavailable products
+- Use the menu on mobile
+
+---
+
+## Multi-Tenancy
+
+Tenant A must never be able to access:
+
+```text
+Tenant B menu
+Tenant B media
+Tenant B analytics
+Tenant B users
+```
+
+through either the UI or API.
+
+---
+
+# 74. Definition of Done
+
+A feature is considered complete when:
+
+- Backend implementation exists
+- Database migration exists
+- API validation exists
+- Authorization exists
+- Frontend implementation exists
+- Persian UI exists
+- English UI exists
+- RTL works
+- LTR works
+- Mobile layout works
+- Error states exist
+- Loading states exist
+- Tests exist
+- Documentation exists
+
+---
+
+# 75. Testing Strategy
+
+### Unit Tests
+
+Test:
+
+- Pricing
+- Translation fallback
+- Permissions
+- Availability
+- Subscription entitlements
+
+### Integration Tests
+
+Test:
+
+- Tenant isolation
+- API authorization
+- Menu publishing
+- Image upload
+- Authentication
+
+### E2E Tests
+
+Test:
+
+```text
+Register
+→ Create restaurant
+→ Create menu
+→ Publish
+→ Open public URL
+→ Switch language
+→ Search item
+```
+
+---
+
+# 76. Observability
+
+Use:
+
+```text
+Structured logs
+Metrics
+Error tracking
+Health checks
+Audit logs
+```
+
+Required endpoints:
+
+```text
+/health
+/ready
+```
+
+Monitor:
+
+- API latency
+- Database latency
+- Error rate
+- Cache hit ratio
+- Storage errors
+- Public menu availability
+
+---
+
+# 77. Backup & Recovery
+
+PostgreSQL:
+
+```text
+Daily full backup
++
+Point-in-time recovery where available
+```
+
+Object storage:
+
+```text
+Versioning
++
+Replication where required
+```
+
+Target initial:
+
+```text
+RPO: 24h
+RTO: 4h
+```
+
+Can be improved for higher plans.
+
+---
+
+# 78. Project Phases
+
+## Phase 1 — Foundation
+
+- Repository
+- CI/CD
+- Database
+- Authentication
+- Multi-tenancy
+- RBAC
+- Base UI
+- i18n
+
+## Phase 2 — Menu
+
+- Categories
+- Items
+- Translations
+- Images
+- Pricing
+- Availability
+- Variants
+
+## Phase 3 — Public Menu
+
+- Public URLs
+- Responsive UI
+- Language switching
+- SEO
+- QR codes
+- Themes
+
+## Phase 4 — SaaS
+
+- Plans
+- Subscriptions
+- Entitlements
+- Usage limits
+- Billing foundation
+
+## Phase 5 — Analytics
+
+- Events
+- Dashboard
+- QR analytics
+- Product analytics
+
+## Phase 6 — Growth
+
+- Custom domains
+- Multiple branches
+- Import/export
+- Advanced themes
+- PWA
+- API
+
+---
+
+# 79. Example Tenant
+
+```text
+Restaurant:
+Cafe Nova
+
+Slug:
+cafe-nova
+
+Languages:
+Persian
+English
+
+Branches:
+1
+
+Categories:
+├── Breakfast
+├── Burgers
+├── Pizza
+├── Pasta
+├── Drinks
+└── Desserts
+
+Products:
+47
+
+Public URL:
+https://menu.example.com/cafe-nova
+
+QR:
+https://menu.example.com/cafe-nova
+```
+
+---
+
+# 80. Example Menu Item
+
+```text
+Product:
+Cheeseburger
+
+Persian:
+چیزبرگر
+
+English:
+Cheeseburger
+
+Persian Description:
+برگر گوشت تازه با پنیر چدار، کاهو و سس مخصوص
+
+English Description:
+Fresh beef burger with cheddar cheese,
+lettuce and signature sauce.
+
+Price:
+€12.50
+
+Tags:
+Burger
+Popular
+
+Availability:
+Available
+
+Image:
+cheeseburger.webp
+```
+
+---
+
+# 81. Design Principles
+
+The product should follow these principles:
+
+### 1. Mobile First
+
+The customer is probably standing at a restaurant table using a phone.
+
+### 2. Fast
+
+The menu should open almost immediately.
+
+### 3. Visual
+
+Food photography should be a first-class component.
+
+### 4. Simple
+
+Restaurant staff should not need technical knowledge.
+
+### 5. Bilingual by Design
+
+Persian and English should not be an afterthought.
+
+### 6. Multi-Tenant by Design
+
+Tenant isolation must exist at the architecture and database levels.
+
+### 7. API First
+
+Future POS, ordering, mobile apps, and integrations should be possible.
+
+### 8. Extensible
+
+The menu should become the foundation for future restaurant services.
+
+---
+
+# 82. Future Product Direction
+
+The long-term product can evolve from:
+
+```text
+Digital Menu
+```
+
+into:
+
+```text
+Restaurant Commerce Platform
+```
+
+with modules:
+
+```text
+                 ┌──────────────┐
+                 │ Digital Menu │
+                 └──────┬───────┘
+                        │
+       ┌────────────────┼────────────────┐
+       ▼                ▼                ▼
+   Ordering           POS            Reservations
+       │                │                │
+       ▼                ▼                ▼
+   Payments         Inventory           CRM
+       │                │                │
+       └────────────────┼────────────────┘
+                        ▼
+                  Analytics / BI
+```
+
+The initial architecture should therefore keep the **menu domain independent from ordering, payment, inventory, and POS domains**.
+
+---
+
+# 83. Final MVP Definition
+
+The first production release is successful when a restaurant can go from:
+
+```text
+"I have no digital menu"
+```
+
+to:
+
+```text
+"I have a professional bilingual menu
+with a QR code that my customers can scan"
+```
+
+in **less than five minutes**, without developer assistance.
+
+The customer experience should be:
+
+```text
+SCAN → OPEN → CHOOSE LANGUAGE → BROWSE
+```
+
+while the restaurant experience should be:
+
+```text
+LOGIN → EDIT → PUBLISH → PRINT QR
+```
+
+The product's core competitive advantage should be the combination of:
+
+**extreme simplicity + excellent mobile UX + native Persian/English support + multi-tenant SaaS architecture + instant publishing.**

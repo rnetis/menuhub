@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────── Auth ───────────────────────────
+
+model User {
+  id              String       @id @default(cuid())
+  email           String       @unique
+  passwordHash    String
+  name            String
+  isPlatformAdmin Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  memberships     Membership[]
+  sessions        Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────── Tenancy ────────────────────────
+
+model Tenant {
+  id               String        @id @default(cuid())
+  slug             String        @unique
+  name             String
+  taglineFa        String?
+  taglineEn        String?
+  businessType     String        @default("restaurant")
+  logoUrl          String?
+  coverUrl         String?
+  phone            String?
+  address          String?
+  defaultLanguage  String        @default("fa")
+  fallbackLanguage String        @default("fa")
+  currency         String        @default("EUR")
+  theme            String        @default("classic")
+  primaryColor     String        @default("#0F766E")
+  secondaryColor   String        @default("#F59E0B")
+  radius           String        @default("md")
+  showPrices       Boolean       @default(true)
+  status           String        @default("ACTIVE") // ACTIVE | SUSPENDED
+  plan             String        @default("FREE") // FREE | STARTER | BUSINESS | ENTERPRISE
+  planRenewsAt     DateTime?
+  showPlatformBrand Boolean      @default(true)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  memberships      Membership[]
+  categories       Category[]
+  items            MenuItem[]
+  branches         Branch[]
+  events           AnalyticsEvent[]
+  domains          Domain[]
+}
+
+model Membership {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  role      String   @default("VIEWER") // OWNER ADMIN MANAGER EDITOR VIEWER
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tenantId])
+}
+
+model Branch {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name      String
+  nameEn    String?
+  address   String?
+  phone     String?
+  openHour  Int      @default(9) // 0-23
+  openMin   Int      @default(0)
+  closeHour Int      @default(23)
+  closeMin  Int      @default(0)
+  isClosed  Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Domain {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  domain      String   @unique
+  verified    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+// ─────────────────────────── Menu ───────────────────────────
+
+model Category {
+  id          String     @id @default(cuid())
+  tenantId    String
+  tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  nameFa      String
+  nameEn      String
+  descFa      String?
+  descEn      String?
+  icon        String     @default("🍽️")
+  imageUrl    String?
+  sortOrder   Int        @default(0)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  items       MenuItem[]
+}
+
+model MenuItem {
+  id             String    @id @default(cuid())
+  tenantId       String
+  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  categoryId     String
+  category       Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  nameFa         String
+  nameEn         String
+  descFa         String?
+  descEn         String?
+  imageUrl       String?
+  sku            String?
+  basePrice      Float     @default(0)
+  compareAtPrice Float?
+  currency       String    @default("EUR")
+  status         String    @default("AVAILABLE") // AVAILABLE | UNAVAILABLE | HIDDEN
+  featured       Boolean   @default(false)
+  isVegetarian   Boolean   @default(false)
+  isVegan        Boolean   @default(false)
+  isSpicy        Boolean   @default(false)
+  isHalal        Boolean   @default(false)
+  isGlutenFree   Boolean   @default(false)
+  containsNuts   Boolean   @default(false)
+  containsDairy  Boolean   @default(false)
+  containsEgg    Boolean   @default(false)
+  tags           String    @default("") // comma separated
+  availableFrom  Int? // hour 0-23 scheduled availability
+  availableTo    Int?
+  sortOrder      Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  variants       Variant[]
+  addOns         AddOn[]
+}
+
+model Variant {
+  id          String   @id @default(cuid())
+  itemId      String
+  item        MenuItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  nameFa      String
+  nameEn      String
+  price       Float    @default(0)
+  isAvailable Boolean  @default(true)
+  sortOrder   Int      @default(0)
+}
+
+model AddOn {
+  id          String   @id @default(cuid())
+  itemId      String
+  item        MenuItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  nameFa      String
+  nameEn      String
+  price       Float    @default(0)
+  isRequired  Boolean  @default(false)
+  isAvailable Boolean  @default(true)
+  sortOrder   Int      @default(0)
+}
+
+// ───────────────────────── Analytics ────────────────────────
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  type      String // MENU_VIEW | ITEM_VIEW | QR_SCAN | SEARCH | LANGUAGE_SWITCH | SHARE
+  locale    String   @default("fa")
+  itemId    String?
+  itemName  String?
+  category  String?
+  device    String? // mobile | desktop | tablet
+  referrer  String?
+  source    String? // qr | direct | social
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, type, createdAt])
+}

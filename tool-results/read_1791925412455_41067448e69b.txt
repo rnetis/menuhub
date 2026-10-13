@@ -1,0 +1,2002 @@
+     1→# Product Requirements Document
+     2→## Bilingual Online Menu SaaS
+     3→
+     4→**Product Type:** Multi-tenant SaaS  
+     5→**Primary Languages:** Persian (RTL) + English (LTR)  
+     6→**Target Businesses:** Restaurants, cafés, fast-food restaurants, bakeries, juice bars, hotels, food courts, catering businesses, and similar food-service businesses  
+     7→**Platforms:** Web, PWA, Mobile Web  
+     8→**Primary Access Method:** QR Code + direct URL  
+     9→**Architecture:** Multi-tenant SaaS  
+    10→**Initial Deployment:** Single-instance capable, horizontally scalable
+    11→
+    12→---
+    13→
+    14→# 1. Product Vision
+    15→
+    16→Create a modern SaaS platform that allows food-service businesses to create, manage, customize, and publish a professional online menu without requiring technical knowledge.
+    17→
+    18→Each business receives its own public menu URL and QR code.
+    19→
+    20→Example:
+    21→
+    22→```text
+    23→https://menu.example.com/cafe-nova
+    24→```
+    25→
+    26→Customers scan the QR code at the table and immediately see the restaurant's menu.
+    27→
+    28→The system must support:
+    29→
+    30→- Persian and English content
+    31→- RTL/LTR interfaces
+    32→- Categories and menu items
+    33→- Images
+    34→- Prices
+    35→- Variants
+    36→- Add-ons
+    37→- Availability
+    38→- Dietary information
+    39→- Search
+    40→- Featured items
+    41→- Promotional items
+    42→- Restaurant branding
+    43→- QR codes
+    44→- Analytics
+    45→- Multi-tenant administration
+    46→- Multiple branches
+    47→- Role-based access control
+    48→
+    49→The product should feel closer to a **digital storefront** than a simple PDF menu.
+    50→
+    51→---
+    52→
+    53→# 2. Problem Statement
+    54→
+    55→Traditional restaurant menus have several problems:
+    56→
+    57→- Printing is expensive.
+    58→- Price changes require reprinting.
+    59→- Customers cannot easily switch languages.
+    60→- PDF menus are often difficult to navigate on mobile.
+    61→- Menu images may be low quality.
+    62→- Restaurants have no useful analytics.
+    63→- Different branches may have different menus.
+    64→- Updating availability is inconvenient.
+    65→- QR-code menus are often visually poor.
+    66→- Restaurants usually need a developer to make significant changes.
+    67→
+    68→The SaaS should solve these problems with a simple management dashboard and a fast mobile-first customer experience.
+    69→
+    70→---
+    71→
+    72→# 3. Goals
+    73→
+    74→## Primary Goals
+    75→
+    76→1. Allow a business to create a digital menu in minutes.
+    77→2. Allow menu content to exist independently in Persian and English.
+    78→3. Provide automatic RTL/LTR rendering.
+    79→4. Provide a mobile-first customer experience.
+    80→5. Generate QR codes automatically.
+    81→6. Allow restaurants to update prices and availability instantly.
+    82→7. Support multiple branches.
+    83→8. Support restaurant branding.
+    84→9. Provide basic analytics.
+    85→10. Provide subscription-based SaaS billing.
+    86→11. Support future languages without redesigning the data model.
+    87→
+    88→## Secondary Goals
+    89→
+    90→- PWA installation
+    91→- SEO-friendly public menus
+    92→- Social sharing
+    93→- WhatsApp/Telegram sharing
+    94→- Table-specific QR codes
+    95→- Promotional campaigns
+    96→- Ordering integration in future versions
+    97→- POS integration
+    98→- Digital signage
+    99→
+   100→---
+   101→
+   102→# 4. Non-Goals
+   103→
+   104→The first version should NOT attempt to become a complete restaurant POS.
+   105→
+   106→Out of scope for MVP:
+   107→
+   108→- Full accounting
+   109→- Inventory management
+   110→- Kitchen Display System
+   111→- Employee payroll
+   112→- Delivery fleet management
+   113→- Payment processing
+   114→- Full online ordering
+   115→- Reservation management
+   116→- Loyalty program
+   117→- Advanced CRM
+   118→
+   119→These can become future modules.
+   120→
+   121→---
+   122→
+   123→# 5. Target Users
+   124→
+   125→## 5.1 Restaurant Owner
+   126→
+   127→Needs:
+   128→
+   129→- Create restaurant
+   130→- Configure branding
+   131→- Manage menu
+   132→- Manage prices
+   133→- Upload images
+   134→- Generate QR codes
+   135→- View analytics
+   136→- Manage employees
+   137→- Manage subscription
+   138→
+   139→---
+   140→
+   141→## 5.2 Restaurant Manager
+   142→
+   143→Needs:
+   144→
+   145→- Update menu
+   146→- Enable/disable products
+   147→- Change prices
+   148→- Manage categories
+   149→- Manage promotions
+   150→- View analytics
+   151→
+   152→---
+   153→
+   154→## 5.3 Menu Editor
+   155→
+   156→Needs:
+   157→
+   158→- Edit descriptions
+   159→- Upload images
+   160→- Translate items
+   161→- Organize categories
+   162→- Configure variants
+   163→
+   164→---
+   165→
+   166→## 5.4 Customer
+   167→
+   168→Needs:
+   169→
+   170→- Open menu quickly
+   171→- Select language
+   172→- Browse categories
+   173→- Search items
+   174→- View images
+   175→- View prices
+   176→- See unavailable items
+   177→- Read descriptions
+   178→- Understand allergens/dietary information
+   179→- Share menu/items
+   180→
+   181→No account should be required.
+   182→
+   183→---
+   184→
+   185→## 5.5 Platform Administrator
+   186→
+   187→Needs:
+   188→
+   189→- Manage tenants
+   190→- Manage subscriptions
+   191→- Manage plans
+   192→- Manage users
+   193→- Manage domains
+   194→- View system analytics
+   195→- Suspend tenants
+   196→- Manage platform configuration
+   197→
+   198→---
+   199→
+   200→# 6. Core Product Concept
+   201→
+   202→Every restaurant is a **Tenant**.
+   203→
+   204→Example:
+   205→
+   206→```text
+   207→Platform
+   208→│
+   209→├── Restaurant A
+   210→│   ├── Branch Tehran
+   211→│   ├── Branch Shiraz
+   212→│   └── Menu
+   213→│
+   214→├── Restaurant B
+   215→│   └── Branch Dubai
+   216→│
+   217→└── Restaurant C
+   218→    └── Branch Yerevan
+   219→```
+   220→
+   221→Each tenant has isolated:
+   222→
+   223→- Users
+   224→- Menu
+   225→- Categories
+   226→- Items
+   227→- Media
+   228→- Branches
+   229→- Settings
+   230→- Branding
+   231→- Analytics
+   232→- Subscription
+   233→
+   234→---
+   235→
+   236→# 7. Public Menu
+   237→
+   238→Example URL:
+   239→
+   240→```text
+   241→menu.example.com/cafe-nova
+   242→```
+   243→
+   244→Optional custom domain:
+   245→
+   246→```text
+   247→menu.cafenova.com
+   248→```
+   249→
+   250→## Customer Flow
+   251→
+   252→```text
+   253→Scan QR
+   254→   ↓
+   255→Open Menu
+   256→   ↓
+   257→Detect preferred language
+   258→   ↓
+   259→Display restaurant branding
+   260→   ↓
+   261→Select language if necessary
+   262→   ↓
+   263→Browse categories
+   264→   ↓
+   265→Open item
+   266→   ↓
+   267→View details
+   268→```
+   269→
+   270→---
+   271→
+   272→# 8. Language System
+   273→
+   274→The application supports two languages in MVP:
+   275→
+   276→### Persian
+   277→
+   278→```text
+   279→fa-IR
+   280→RTL
+   281→```
+   282→
+   283→### English
+   284→
+   285→```text
+   286→en-US
+   287→LTR
+   288→```
+   289→
+   290→The architecture MUST support additional languages later.
+   291→
+   292→Example:
+   293→
+   294→```text
+   295→fa
+   296→en
+   297→ar
+   298→tr
+   299→de
+   300→ru
+   301→```
+   302→
+   303→---
+   304→
+   305→# 9. Bilingual Content Model
+   306→
+   307→Every translatable entity should store language-specific fields.
+   308→
+   309→Example:
+   310→
+   311→```json
+   312→{
+   313→  "name": {
+   314→    "fa": "چیزبرگر",
+   315→    "en": "Cheeseburger"
+   316→  },
+   317→  "description": {
+   318→    "fa": "برگر گوشت با پنیر چدار",
+   319→    "en": "Beef burger with cheddar cheese"
+   320→  }
+   321→}
+   322→```
+   323→
+   324→Do NOT create separate products for each language.
+   325→
+   326→Instead:
+   327→
+   328→```text
+   329→MenuItem
+   330→ ├── name.fa
+   331→ ├── name.en
+   332→ ├── description.fa
+   333→ └── description.en
+   334→```
+   335→
+   336→This keeps both language versions tied to the same product.
+   337→
+   338→---
+   339→
+   340→# 10. Language Fallback
+   341→
+   342→If English content is unavailable:
+   343→
+   344→```text
+   345→English request
+   346→      ↓
+   347→English content exists?
+   348→      ↓
+   349→YES → English
+   350→NO
+   351→      ↓
+   352→Fallback to Persian
+   353→```
+   354→
+   355→The fallback behavior should be configurable by the tenant.
+   356→
+   357→---
+   358→
+   359→# 11. Menu Structure
+   360→
+   361→Recommended hierarchy:
+   362→
+   363→```text
+   364→Restaurant
+   365→    ↓
+   366→Menu
+   367→    ↓
+   368→Category
+   369→    ↓
+   370→Subcategory
+   371→    ↓
+   372→Menu Item
+   373→    ↓
+   374→Variant / Add-on
+   375→```
+   376→
+   377→Example:
+   378→
+   379→```text
+   380→🍔 Burgers
+   381→   ├── Classic Burger
+   382→   ├── Cheeseburger
+   383→   └── Double Burger
+   384→
+   385→🍕 Pizza
+   386→   ├── Margherita
+   387→   ├── Pepperoni
+   388→   └── Chicken Pizza
+   389→
+   390→🥤 Drinks
+   391→   ├── Coca Cola
+   392→   ├── Fresh Orange Juice
+   393→   └── Water
+   394→```
+   395→
+   396→---
+   397→
+   398→# 12. Menu Categories
+   399→
+   400→Each category supports:
+   401→
+   402→- Persian name
+   403→- English name
+   404→- Description
+   405→- Image
+   406→- Icon
+   407→- Sort order
+   408→- Visibility
+   409→- Active/inactive state
+   410→
+   411→Example:
+   412→
+   413→```text
+   414→Category
+   415→-------------------------
+   416→name_fa
+   417→name_en
+   418→description_fa
+   419→description_en
+   420→image
+   421→icon
+   422→sort_order
+   423→is_active
+   424→```
+   425→
+   426→Categories can be reordered using drag-and-drop.
+   427→
+   428→---
+   429→
+   430→# 13. Menu Items
+   431→
+   432→Each menu item supports:
+   433→
+   434→### Basic Information
+   435→
+   436→- Persian name
+   437→- English name
+   438→- Persian description
+   439→- English description
+   440→- Main image
+   441→- Gallery
+   442→- SKU/internal code
+   443→- Category
+   444→
+   445→### Pricing
+   446→
+   447→- Base price
+   448→- Compare-at price
+   449→- Promotional price
+   450→- Currency
+   451→
+   452→### Status
+   453→
+   454→- Available
+   455→- Unavailable
+   456→- Hidden
+   457→- Featured
+   458→
+   459→### Attributes
+   460→
+   461→- Vegetarian
+   462→- Vegan
+   463→- Spicy
+   464→- Halal
+   465→- Gluten-free
+   466→- Contains nuts
+   467→- Contains dairy
+   468→- Contains egg
+   469→- Custom tags
+   470→
+   471→---
+   472→
+   473→# 14. Product Variants
+   474→
+   475→A product can have multiple variants.
+   476→
+   477→Example:
+   478→
+   479→```text
+   480→Pizza
+   481→ ├── Small       €8
+   482→ ├── Medium      €11
+   483→ └── Large       €14
+   484→```
+   485→
+   486→Variant model:
+   487→
+   488→```text
+   489→Variant
+   490→├── name
+   491→├── price
+   492→├── compare_price
+   493→├── is_available
+   494→└── sort_order
+   495→```
+   496→
+   497→---
+   498→
+   499→# 15. Add-ons
+   500→
+   501→Example:
+   502→
+   503→```text
+   504→Cheeseburger
+   505→
+   506→Add-ons:
+   507→
+   508→Extra Cheese       +€1
+   509→Bacon              +€2
+   510→Fried Egg          +€1
+   511→Extra Sauce        +€0.50
+   512→```
+   513→
+   514→Add-ons may support:
+   515→
+   516→- Required/optional
+   517→- Minimum selection
+   518→- Maximum selection
+   519→- Price modifier
+   520→- Availability
+   521→
+   522→---
+   523→
+   524→# 16. Pricing
+   525→
+   526→The system must support:
+   527→
+   528→- Multiple currencies
+   529→- Decimal prices
+   530→- Currency symbol/code
+   531→- Optional tax display
+   532→- Optional service charge
+   533→
+   534→Example:
+   535→
+   536→```text
+   537→€12.50
+   538→$12.50
+   539→12.50 د.ت
+   540→```
+   541→
+   542→Currency should be stored as ISO currency codes rather than hardcoded symbols.
+   543→
+   544→---
+   545→
+   546→# 17. Availability
+   547→
+   548→Menu items can be controlled dynamically.
+   549→
+   550→Statuses:
+   551→
+   552→```text
+   553→AVAILABLE
+   554→UNAVAILABLE
+   555→HIDDEN
+   556→SCHEDULED
+   557→```
+   558→
+   559→Example:
+   560→
+   561→```text
+   562→Breakfast
+   563→07:00 → 12:00
+   564→```
+   565→
+   566→The item automatically becomes unavailable outside its schedule.
+   567→
+   568→Future versions may support:
+   569→
+   570→- Branch-specific availability
+   571→- Day-specific availability
+   572→- Inventory-driven availability
+   573→
+   574→---
+   575→
+   576→# 18. Restaurant Branding
+   577→
+   578→Each tenant can customize:
+   579→
+   580→- Logo
+   581→- Cover image
+   582→- Primary color
+   583→- Secondary color
+   584→- Background
+   585→- Typography
+   586→- Button style
+   587→- Border radius
+   588→- Menu layout
+   589→- Card layout
+   590→
+   591→Predefined themes should be available.
+   592→
+   593→Example:
+   594→
+   595→```text
+   596→Classic
+   597→Modern
+   598→Minimal
+   599→Luxury
+   600→Dark
+   601→Cafe
+   602→Fast Food
+   603→```
+   604→
+   605→---
+   606→
+   607→# 19. Menu Themes
+   608→
+   609→Instead of allowing unrestricted CSS customization initially, provide controlled themes.
+   610→
+   611→Example:
+   612→
+   613→```text
+   614→Theme
+   615→├── layout
+   616→├── colors
+   617→├── typography
+   618→├── card_style
+   619→├── button_style
+   620→└── navigation_style
+   621→```
+   622→
+   623→This keeps the public menu performant and consistent.
+   624→
+   625→---
+   626→
+   627→# 20. QR Code System
+   628→
+   629→Every menu receives a QR code.
+   630→
+   631→Example:
+   632→
+   633→```text
+   634→https://menu.example.com/cafe-nova
+   635→```
+   636→
+   637→QR code options:
+   638→
+   639→- PNG
+   640→- SVG
+   641→- PDF
+   642→- Printable version
+   643→
+   644→QR codes can include branding.
+   645→
+   646→Example:
+   647→
+   648→```text
+   649→SCAN TO VIEW MENU
+   650→
+   651→[ QR CODE ]
+   652→
+   653→اسکن کنید
+   654→```
+   655→
+   656→---
+   657→
+   658→# 21. Table QR Codes
+   659→
+   660→Future/Premium functionality.
+   661→
+   662→Each table can have a unique URL:
+   663→
+   664→```text
+   665→/menu/cafe-nova/table/01
+   666→/menu/cafe-nova/table/02
+   667→/menu/cafe-nova/table/03
+   668→```
+   669→
+   670→This enables future:
+   671→
+   672→- Table ordering
+   673→- Table analytics
+   674→- Waiter calling
+   675→- Table-specific promotions
+   676→
+   677→---
+   678→
+   679→# 22. Dashboard
+   680→
+   681→The restaurant dashboard should contain:
+   682→
+   683→```text
+   684→Dashboard
+   685→│
+   686→├── Overview
+   687→├── Menu
+   688→│   ├── Categories
+   689→│   ├── Items
+   690→│   ├── Variants
+   691→│   └── Add-ons
+   692→│
+   693→├── Media
+   694→├── QR Codes
+   695→├── Branches
+   696→├── Branding
+   697→├── Analytics
+   698→├── Team
+   699→├── Settings
+   700→└── Subscription
+   701→```
+   702→
+   703→---
+   704→
+   705→# 23. Dashboard Overview
+   706→
+   707→Display:
+   708→
+   709→- Menu views today
+   710→- Menu views this week
+   711→- Most viewed item
+   712→- Most viewed category
+   713→- Language distribution
+   714→- QR scans
+   715→- Active branches
+   716→- Current subscription
+   717→- Recent activity
+   718→
+   719→Example:
+   720→
+   721→```text
+   722→Today's Views
+   723→1,248
+   724→
+   725→Persian
+   726→72%
+   727→
+   728→English
+   729→28%
+   730→
+   731→Most Viewed
+   732→Cheeseburger
+   733→```
+   734→
+   735→---
+   736→
+   737→# 24. Menu Editor
+   738→
+   739→The editor should be highly visual.
+   740→
+   741→Example:
+   742→
+   743→```text
+   744→Categories
+   745→
+   746→☰ Burgers
+   747→☰ Pizza
+   748→☰ Drinks
+   749→☰ Desserts
+   750→
+   751→[ + Add Category ]
+   752→```
+   753→
+   754→Opening a category:
+   755→
+   756→```text
+   757→Burgers
+   758→
+   759→☰ Classic Burger
+   760→☰ Cheeseburger
+   761→☰ Double Burger
+   762→
+   763→[ + Add Item ]
+   764→```
+   765→
+   766→Items should support drag-and-drop ordering.
+   767→
+   768→---
+   769→
+   770→# 25. Item Editor
+   771→
+   772→Example:
+   773→
+   774→```text
+   775→--------------------------------
+   776→Menu Item
+   777→--------------------------------
+   778→
+   779→Persian
+   780→Name:
+   781→[ چیزبرگر ]
+   782→
+   783→Description:
+   784→[ برگر گوشت با پنیر چدار ]
+   785→
+   786→English
+   787→Name:
+   788→[ Cheeseburger ]
+   789→
+   790→Description:
+   791→[ Beef burger with cheddar cheese ]
+   792→
+   793→Price:
+   794→[ 12.50 ]
+   795→
+   796→Image:
+   797→[ Upload ]
+   798→
+   799→Availability:
+   800→[ ✓ Available ]
+   801→
+   802→[ Save ]
+   803→--------------------------------
+   804→```
+   805→
+   806→A split-screen preview should be available on desktop.
+   807→
+   808→---
+   809→
+   810→# 26. Media Management
+   811→
+   812→Central media library.
+   813→
+   814→Features:
+   815→
+   816→- Upload
+   817→- Delete
+   818→- Search
+   819→- Rename
+   820→- Crop
+   821→- Optimize
+   822→- WebP/AVIF conversion
+   823→- Multiple sizes
+   824→- Alt text
+   825→
+   826→Images should automatically be optimized for mobile.
+   827→
+   828→Recommended image pipeline:
+   829→
+   830→```text
+   831→Upload
+   832→ ↓
+   833→Validate
+   834→ ↓
+   835→Resize
+   836→ ↓
+   837→Compress
+   838→ ↓
+   839→Generate WebP/AVIF
+   840→ ↓
+   841→Store
+   842→ ↓
+   843→CDN
+   844→```
+   845→
+   846→---
+   847→
+   848→# 27. Search
+   849→
+   850→Customer-facing search should search:
+   851→
+   852→- Item name
+   853→- Description
+   854→- Category
+   855→- Tags
+   856→
+   857→Search must work in both Persian and English.
+   858→
+   859→Example:
+   860→
+   861→Searching:
+   862→
+   863→```text
+   864→burger
+   865→```
+   866→
+   867→should find:
+   868→
+   869→```text
+   870→Cheeseburger
+   871→Chicken Burger
+   872→Double Burger
+   873→```
+   874→
+   875→Persian search:
+   876→
+   877→```text
+   878→برگر
+   879→```
+   880→
+   881→should find the equivalent Persian products.
+   882→
+   883→---
+   884→
+   885→# 28. Persian Search Requirements
+   886→
+   887→The search engine should normalize common Persian/Arabic differences.
+   888→
+   889→For example:
+   890→
+   891→```text
+   892→ي → ی
+   893→ك → ک
+   894→```
+   895→
+   896→It should also normalize:
+   897→
+   898→- Zero-width non-joiners
+   899→- Arabic/Persian numerals
+   900→- Diacritics
+   901→- Common whitespace differences
+   902→
+   903→---
+   904→
+   905→# 29. Customer UX
+   906→
+   907→The public menu must be:
+   908→
+   909→- Mobile-first
+   910→- Extremely fast
+   911→- Touch-friendly
+   912→- No login required
+   913→- Minimal JavaScript
+   914→- Accessible
+   915→- SEO-friendly
+   916→
+   917→Initial page should ideally load within approximately:
+   918→
+   919→```text
+   920→< 2 seconds
+   921→```
+   922→
+   923→on a normal mobile connection.
+   924→
+   925→---
+   926→
+   927→# 30. Public Menu Layout
+   928→
+   929→Recommended structure:
+   930→
+   931→```text
+   932→┌───────────────────────────┐
+   933→│          LOGO             │
+   934→│      Cafe Nova            │
+   935→│                           │
+   936→│    [ فارسی | English ]    │
+   937→├───────────────────────────┤
+   938→│ Categories                │
+   939→│                           │
+   940→│ Burgers | Pizza | Drinks  │
+   941→├───────────────────────────┤
+   942→│                           │
+   943→│ 🍔 Cheeseburger           │
+   944→│ Beef + cheddar             │
+   945→│ €12.50                    │
+   946→│                           │
+   947→│ 🍔 Double Burger           │
+   948→│ €15.00                    │
+   949→│                           │
+   950→└───────────────────────────┘
+   951→```
+   952→
+   953→---
+   954→
+   955→# 31. Responsive Design
+   956→
+   957→Must support:
+   958→
+   959→- Mobile
+   960→- Tablet
+   961→- Desktop
+   962→
+   963→Breakpoints should be responsive rather than device-specific.
+   964→
+   965→The mobile menu is the primary experience.
+   966→
+   967→---
+   968→
+   969→# 32. PWA
+   970→
+   971→The public menu should optionally behave as a PWA.
+   972→
+   973→Features:
+   974→
+   975→- Installable
+   976→- App icon
+   977→- Splash screen
+   978→- Offline cached menu
+   979→- Service worker
+   980→- Cache-first static assets
+   981→
+   982→If enabled, recently visited menus can remain partially available offline.
+   983→
+   984→---
+   985→
+   986→# 33. SEO
+   987→
+   988→Each public menu should generate:
+   989→
+   990→- Semantic HTML
+   991→- Metadata
+   992→- Open Graph tags
+   993→- Twitter/X card metadata
+   994→- Structured data
+   995→
+   996→Recommended Schema.org types:
+   997→
+   998→```text
+   999→Restaurant
+  1000→Menu
+  1001→MenuSection
+  1002→MenuItem
+  1003→```
+  1004→
+  1005→Example structured data:
+  1006→
+  1007→```json
+  1008→{
+  1009→  "@type": "MenuItem",
+  1010→  "name": "Cheeseburger",
+  1011→  "offers": {
+  1012→    "@type": "Offer",
+  1013→    "price": "12.50",
+  1014→    "priceCurrency": "EUR"
+  1015→  }
+  1016→}
+  1017→```
+  1018→
+  1019→---
+  1020→
+  1021→# 34. Custom Domains
+  1022→
+  1023→Premium feature.
+  1024→
+  1025→Example:
+  1026→
+  1027→```text
+  1028→menu.cafenova.com
+  1029→```
+  1030→
+  1031→The platform must support:
+  1032→
+  1033→- Domain verification
+  1034→- DNS instructions
+  1035→- SSL
+  1036→- Automatic certificate provisioning
+  1037→- Tenant routing
+  1038→
+  1039→Architecture:
+  1040→
+  1041→```text
+  1042→Request
+  1043→ ↓
+  1044→Domain Resolver
+  1045→ ↓
+  1046→Tenant Resolver
+  1047→ ↓
+  1048→Tenant Menu
+  1049→```
+  1050→
+  1051→---
+  1052→
+  1053→# 35. Multi-Branch Support
+  1054→
+  1055→A business can have multiple branches.
+  1056→
+  1057→Example:
+  1058→
+  1059→```text
+  1060→Cafe Nova
+  1061→
+  1062→Branches:
+  1063→├── Downtown
+  1064→├── Airport
+  1065→└── Mall
+  1066→```
+  1067→
+  1068→Each branch can have:
+  1069→
+  1070→- Address
+  1071→- Phone
+  1072→- Opening hours
+  1073→- Location
+  1074→- Menu
+  1075→- Availability
+  1076→- QR codes
+  1077→
+  1078→The tenant can choose:
+  1079→
+  1080→```text
+  1081→Shared menu
+  1082→```
+  1083→
+  1084→or:
+  1085→
+  1086→```text
+  1087→Branch-specific menu
+  1088→```
+  1089→
+  1090→---
+  1091→
+  1092→# 36. Opening Hours
+  1093→
+  1094→Support:
+  1095→
+  1096→- Weekly schedule
+  1097→- Multiple intervals
+  1098→- Holidays
+  1099→- Temporary closure
+  1100→
+  1101→Example:
+  1102→
+  1103→```text
+  1104→Saturday
+  1105→09:00 - 14:00
+  1106→17:00 - 23:00
+  1107→```
+  1108→
+  1109→Public menu may display:
+  1110→
+  1111→```text
+  1112→● Open now
+  1113→```
+  1114→
+  1115→or:
+  1116→
+  1117→```text
+  1118→● Closed
+  1119→Opens at 17:00
+  1120→```
+  1121→
+  1122→---
+  1123→
+  1124→# 37. Analytics
+  1125→
+  1126→MVP analytics:
+  1127→
+  1128→- Total views
+  1129→- Unique visitors
+  1130→- QR scans
+  1131→- Language usage
+  1132→- Most viewed categories
+  1133→- Most viewed products
+  1134→- Views by day
+  1135→- Views by hour
+  1136→- Device type
+  1137→- Referrer
+  1138→
+  1139→Example:
+  1140→
+  1141→```text
+  1142→Menu Views
+  1143→───────────────
+  1144→Mon   █████
+  1145→Tue   ███████
+  1146→Wed   █████████
+  1147→Thu   ██████
+  1148→Fri   ███████████
+  1149→```
+  1150→
+  1151→Privacy should be prioritized.
+  1152→
+  1153→Avoid unnecessary collection of personally identifiable information.
+  1154→
+  1155→---
+  1156→
+  1157→# 38. Role-Based Access Control
+  1158→
+  1159→Roles:
+  1160→
+  1161→```text
+  1162→OWNER
+  1163→ADMIN
+  1164→MANAGER
+  1165→EDITOR
+  1166→VIEWER
+  1167→```
+  1168→
+  1169→Example:
+  1170→
+  1171→| Permission | Owner | Admin | Manager | Editor | Viewer |
+  1172→|---|---:|---:|---:|---:|---:|
+  1173→| Menu | ✓ | ✓ | ✓ | ✓ | Read |
+  1174→| Branding | ✓ | ✓ | ✓ | — | — |
+  1175→| Analytics | ✓ | ✓ | ✓ | Read | Read |
+  1176→| Team | ✓ | ✓ | — | — | — |
+  1177→| Billing | ✓ | — | — | — | — |
+  1178→| Delete Tenant | ✓ | — | — | — | — |
+  1179→
+  1180→---
+  1181→
+  1182→# 39. Authentication
+  1183→
+  1184→Support:
+  1185→
+  1186→- Email/password
+  1187→- Magic link
+  1188→- OAuth in future
+  1189→- Password reset
+  1190→- Email verification
+  1191→- Session management
+  1192→- 2FA in future
+  1193→
+  1194→Users belong to tenants through memberships.
+  1195→
+  1196→Recommended model:
+  1197→
+  1198→```text
+  1199→User
+  1200→   ↓
+  1201→Membership
+  1202→   ↓
+  1203→Tenant
+  1204→```
+  1205→
+  1206→This allows one user to manage multiple businesses.
+  1207→
+  1208→---
+  1209→
+  1210→# 40. Data Model
+  1211→
+  1212→Core entities:
+  1213→
+  1214→```text
+  1215→User
+  1216→Tenant
+  1217→Membership
+  1218→Subscription
+  1219→Plan
+  1220→
+  1221→Branch
+  1222→
+  1223→Menu
+  1224→Category
+  1225→MenuItem
+  1226→MenuItemTranslation
+  1227→Variant
+  1228→AddOn
+  1229→Tag
+  1230→
+  1231→Media
+  1232→QRCode
+  1233→
+  1234→Theme
+  1235→ThemeConfiguration
+  1236→
+  1237→AnalyticsEvent
+  1238→
+  1239→Domain
+  1240→OpeningHour
+  1241→Holiday
+  1242→```
+  1243→
+  1244→---
+  1245→
+  1246→# 41. Suggested Database Structure
+  1247→
+  1248→Example:
+  1249→
+  1250→```text
+  1251→tenants
+  1252→---------
+  1253→id
+  1254→name
+  1255→slug
+  1256→logo_id
+  1257→theme_id
+  1258→default_language
+  1259→created_at
+  1260→updated_at
+  1261→```
+  1262→
+  1263→```text
+  1264→menu_items
+  1265→-----------
+  1266→id
+  1267→tenant_id
+  1268→category_id
+  1269→base_price
+  1270→currency
+  1271→status
+  1272→sort_order
+  1273→created_at
+  1274→updated_at
+  1275→```
+  1276→
+  1277→```text
+  1278→menu_item_translations
+  1279→----------------------
+  1280→id
+  1281→menu_item_id
+  1282→locale
+  1283→name
+  1284→description
+  1285→```
+  1286→
+  1287→Constraint:
+  1288→
+  1289→```text
+  1290→UNIQUE(menu_item_id, locale)
+  1291→```
+  1292→
+  1293→This structure makes future languages straightforward.
+  1294→
+  1295→---
+  1296→
+  1297→# 42. Tenant Isolation
+  1298→
+  1299→Every tenant-owned entity must contain a tenant relationship.
+  1300→
+  1301→Example:
+  1302→
+  1303→```text
+  1304→menu_items.tenant_id
+  1305→categories.tenant_id
+  1306→branches.tenant_id
+  1307→media.tenant_id
+  1308→```
+  1309→
+  1310→Application-level authorization must ensure:
+  1311→
+  1312→```text
+  1313→current_user.tenant_id
+  1314→==
+  1315→resource.tenant_id
+  1316→```
+  1317→
+  1318→For PostgreSQL deployments, Row-Level Security may be considered for an additional isolation layer.
+  1319→
+  1320→---
+  1321→
+  1322→# 43. API Architecture
+  1323→
+  1324→Recommended architecture:
+  1325→
+  1326→```text
+  1327→Frontend
+  1328→   ↓
+  1329→API
+  1330→   ↓
+  1331→Application Services
+  1332→   ↓
+  1333→Database
+  1334→   ↓
+  1335→Object Storage
+  1336→```
+  1337→
+  1338→API should be versioned:
+  1339→
+  1340→```text
+  1341→/api/v1/
+  1342→```
+  1343→
+  1344→Example endpoints:
+  1345→
+  1346→```text
+  1347→GET    /api/v1/menu/:slug
+  1348→GET    /api/v1/categories
+  1349→POST   /api/v1/categories
+  1350→PATCH  /api/v1/categories/:id
+  1351→DELETE /api/v1/categories/:id
+  1352→
+  1353→GET    /api/v1/items
+  1354→POST   /api/v1/items
+  1355→PATCH  /api/v1/items/:id
+  1356→DELETE /api/v1/items/:id
+  1357→```
+  1358→
+  1359→---
+  1360→
+  1361→# 44. Public API
+  1362→
+  1363→Public menu API should be optimized separately from the administration API.
+  1364→
+  1365→Example:
+  1366→
+  1367→```text
+  1368→GET /api/v1/public/menus/:slug
+  1369→```
+  1370→
+  1371→Response:
+  1372→
+  1373→```json
+  1374→{
+  1375→  "restaurant": {},
+  1376→  "theme": {},
+  1377→  "categories": [],
+  1378→  "items": [],
+  1379→  "branches": []
+  1380→}
+  1381→```
+  1382→
+  1383→Responses should be cacheable.
+  1384→
+  1385→---
+  1386→
+  1387→# 45. Caching
+  1388→
+  1389→Public menu data is highly cacheable.
+  1390→
+  1391→Recommended:
+  1392→
+  1393→```text
+  1394→Browser Cache
+  1395→      ↓
+  1396→CDN
+  1397→      ↓
+  1398→Redis
+  1399→      ↓
+  1400→Application
+  1401→      ↓
+  1402→PostgreSQL
+  1403→```
+  1404→
+  1405→Menu changes should invalidate relevant caches.
+  1406→
+  1407→---
+  1408→
+  1409→# 46. Performance
+  1410→
+  1411→Targets:
+  1412→
+  1413→### Public Menu
+  1414→
+  1415→```text
+  1416→LCP < 2.5s
+  1417→CLS < 0.1
+  1418→INP < 200ms
+  1419→```
+  1420→
+  1421→### API
+  1422→
+  1423→Typical menu read:
+  1424→
+  1425→```text
+  1426→p95 < 300ms
+  1427→```
+  1428→
+  1429→### Image delivery
+  1430→
+  1431→Use:
+  1432→
+  1433→```text
+  1434→AVIF
+  1435→WebP
+  1436→responsive sizes
+  1437→lazy loading
+  1438→```
+  1439→
+  1440→---
+  1441→
+  1442→# 47. Security
+  1443→
+  1444→Required:
+  1445→
+  1446→- HTTPS
+  1447→- Secure cookies
+  1448→- CSRF protection where applicable
+  1449→- Rate limiting
+  1450→- Input validation
+  1451→- Output encoding
+  1452→- SQL injection protection
+  1453→- XSS protection
+  1454→- File upload validation
+  1455→- MIME validation
+  1456→- Authorization on every tenant resource
+  1457→- Audit logging
+  1458→- Password hashing using Argon2id or equivalent
+  1459→
+  1460→Admin APIs must never rely solely on frontend authorization.
+  1461→
+  1462→---
+  1463→
+  1464→# 48. Audit Log
+  1465→
+  1466→Record important actions:
+  1467→
+  1468→```text
+  1469→User
+  1470→Action
+  1471→Resource
+  1472→Timestamp
+  1473→IP
+  1474→Metadata
+  1475→```
+  1476→
+  1477→Example:
+  1478→
+  1479→```text
+  1480→Admin changed Cheeseburger price
+  1481→€10 → €12.50
+  1482→```
+  1483→
+  1484→This is especially important for multi-user restaurant accounts.
+  1485→
+  1486→---
+  1487→
+  1488→# 49. Subscription System
+  1489→
+  1490→Suggested plans:
+  1491→
+  1492→## Free
+  1493→
+  1494→```text
+  1495→1 branch
+  1496→Basic menu
+  1497→QR code
+  1498→Basic themes
+  1499→Limited items
+  1500→Platform branding
+  1501→```
+  1502→
+  1503→## Starter
+  1504→
+  1505→```text
+  1506→Multiple categories
+  1507→Unlimited items
+  1508→Custom branding
+  1509→Analytics
+  1510→Remove platform branding
+  1511→```
+  1512→
+  1513→## Business
+  1514→
+  1515→```text
+  1516→Multiple branches
+  1517→Custom domain
+  1518→Advanced analytics
+  1519→Team members
+  1520→Advanced themes
+  1521→Priority support
+  1522→```
+  1523→
+  1524→## Enterprise
+  1525→
+  1526→```text
+  1527→Unlimited branches
+  1528→Custom deployment
+  1529→API access
+  1530→Advanced RBAC
+  1531→SLA
+  1532→Dedicated support
+  1533→```
+  1534→
+  1535→Exact pricing should be configurable from the admin panel.
+  1536→
+  1537→---
+  1538→
+  1539→# 50. Subscription Enforcement
+  1540→
+  1541→Features should be controlled through entitlements rather than hardcoded plan checks.
+  1542→
+  1543→Example:
+  1544→
+  1545→```text
+  1546→Feature:
+  1547→custom_domain
+  1548→
+  1549→Tenant entitlement:
+  1550→true
+  1551→```
+  1552→
+  1553→This allows future plans without rewriting business logic.
+  1554→
+  1555→---
+  1556→
+  1557→# 51. Platform Admin Panel
+  1558→
+  1559→Platform administrators can:
+  1560→
+  1561→- View tenants
+  1562→- Search tenants
+  1563→- Suspend tenants
+  1564→- Change plans
+  1565→- View subscriptions
+  1566→- View usage
+  1567→- Manage plans
+  1568→- Manage feature flags
+  1569→- Manage custom domains
+  1570→- View system health
+  1571→- View audit logs
+  1572→
+  1573→---
+  1574→
+  1575→# 52. Onboarding
+  1576→
+  1577→New tenant flow:
+  1578→
+  1579→```text
+  1580→Sign Up
+  1581→ ↓
+  1582→Verify Email
+  1583→ ↓
+  1584→Create Business
+  1585→ ↓
+  1586→Choose Business Type
+  1587→ ↓
+  1588→Choose Language
+  1589→ ↓
+  1590→Choose Theme
+  1591→ ↓
+  1592→Create First Category
+  1593→ ↓
+  1594→Create First Item
+  1595→ ↓
+  1596→Generate QR
+  1597→ ↓
+  1598→Publish
+  1599→```
+  1600→
+  1601→Target:
+  1602→
+  1603→```text
+  1604→First published menu < 5 minutes
+  1605→```
+  1606→
+  1607→---
+  1608→
+  1609→# 53. Import System
+  1610→
+  1611→MVP should support simple bulk import.
+  1612→
+  1613→Supported:
+  1614→
+  1615→```text
+  1616→CSV
+  1617→Excel
+  1618→```
+  1619→
+  1620→Example:
+  1621→
+  1622→```text
+  1623→category,name_fa,name_en,description_fa,description_en,price,currency
+  1624→Burgers,چیزبرگر,Cheeseburger,...,12.5,EUR
+  1625→```
+  1626→
+  1627→Import wizard:
+  1628→
+  1629→```text
+  1630→Upload
+  1631→ ↓
+  1632→Detect columns
+  1633→ ↓
+  1634→Preview
+  1635→ ↓
+  1636→Validate
+  1637→ ↓
+  1638→Import
+  1639→```
+  1640→
+  1641→---
+  1642→
+  1643→# 54. Export
+  1644→
+  1645→Allow businesses to export:
+  1646→
+  1647→- Menu CSV
+  1648→- Menu JSON
+  1649→- Menu PDF
+  1650→- Menu backup
+  1651→
+  1652→A complete tenant backup should eventually contain:
+  1653→
+  1654→```text
+  1655→Menu
+  1656→Categories
+  1657→Items
+  1658→Translations
+  1659→Variants
+  1660→Add-ons
+  1661→Settings
+  1662→Theme
+  1663→```
+  1664→
+  1665→---
+  1666→
+  1667→# 55. Notifications
+  1668→
+  1669→Optional notification system:
+  1670→
+  1671→- Subscription expiration
+  1672→- Payment failure
+  1673→- Domain verification
+  1674→- Team invitation
+  1675→- Menu publishing
+  1676→- Import completion
+  1677→
+  1678→Channels:
+  1679→
+  1680→```text
+  1681→Email
+  1682→In-app
+  1683→SMS (future)
+  1684→```
+  1685→
+  1686→---
+  1687→
+  1688→# 56. Internationalization Architecture
+  1689→
+  1690→Frontend must not hardcode language strings.
+  1691→
+  1692→Use:
+  1693→
+  1694→```text
+  1695→i18n.t("menu.add_item")
+  1696→```
+  1697→
+  1698→Example:
+  1699→
+  1700→```text
+  1701→fa.json
+  1702→en.json
+  1703→```
+  1704→
+  1705→Application UI translations are separate from restaurant menu translations.
+  1706→
+  1707→This distinction is important:
+  1708→
+  1709→```text
+  1710→Platform Translation
+  1711→        +
+  1712→Restaurant Content Translation
+  1713→```
+  1714→
+  1715→---
+  1716→
+  1717→# 57. RTL Requirements
+  1718→
+  1719→Persian interface must support:
+  1720→
+  1721→```css
+  1722→direction: rtl;
+  1723→```
+  1724→
+  1725→But the system should NOT simply mirror everything.
+  1726→
+  1727→Elements such as:
+  1728→
+  1729→- numbers
+  1730→- prices
+  1731→- phone numbers
+  1732→- email
+  1733→- URLs
+  1734→- maps
+  1735→- technical identifiers
+  1736→
+  1737→may need LTR rendering.
+  1738→
+  1739→Use logical CSS properties:
+  1740→
+  1741→```css
+  1742→margin-inline-start
+  1743→padding-inline
+  1744→border-start-start-radius
+  1745→```
+  1746→
+  1747→rather than:
+  1748→
+  1749→```css
+  1750→margin-left
+  1751→padding-right
+  1752→```
+  1753→
+  1754→where appropriate.
+  1755→
+  1756→---
+  1757→
+  1758→# 58. Accessibility
+  1759→
+  1760→Target:
+  1761→
+  1762→```text
+  1763→WCAG 2.2 AA
+  1764→```
+  1765→
+  1766→Requirements:
+  1767→
+  1768→- Keyboard navigation
+  1769→- Proper contrast
+  1770→- Focus states
+  1771→- Semantic HTML
+  1772→- Alt text
+  1773→- Screen-reader labels
+  1774→- Accessible buttons
+  1775→- Accessible language switcher
+  1776→- Reduced-motion support
+  1777→
+  1778→---
+  1779→
+  1780→# 59. Technology Recommendation
+  1781→
+  1782→A modern implementation could use:
+  1783→
+  1784→### Frontend
+  1785→
+  1786→```text
+  1787→React / Vue / Svelte
+  1788→TypeScript
+  1789→Tailwind CSS
+  1790→PWA
+  1791→```
+  1792→
+  1793→### Backend
+  1794→
+  1795→```text
+  1796→Node.js
+  1797→TypeScript
+  1798→PostgreSQL
+  1799→Redis
+  1800→```
+  1801→
+  1802→### Storage
+  1803→
+  1804→```text
+  1805→S3-compatible object storage
+  1806→```
+  1807→
+  1808→### CDN
+  1809→
+  1810→```text
+  1811→Cloudflare
+  1812→```
+  1813→
+  1814→### Authentication
+  1815→
+  1816→```text
+  1817→OAuth/OIDC-compatible architecture
+  1818→```
+  1819→
+  1820→### Deployment
+  1821→
+  1822→```text
+  1823→Docker
+  1824→```
+  1825→
+  1826→The exact stack can be changed without affecting the PRD.
+  1827→
+  1828→---
+  1829→
+  1830→# 60. Recommended Architecture
+  1831→
+  1832→```text
+  1833→                    ┌───────────────┐
+  1834→                    │   Customer    │
+  1835→                    │ Mobile / PWA  │
+  1836→                    └───────┬───────┘
+  1837→                            │
+  1838→                            ▼
+  1839→                    ┌───────────────┐
+  1840→                    │ CDN / Edge    │
+  1841→                    └───────┬───────┘
+  1842→                            │
+  1843→                ┌───────────┴───────────┐
+  1844→                ▼                       ▼
+  1845→       ┌────────────────┐      ┌────────────────┐
+  1846→       │ Public Menu API│      │ Admin Web App   │
+  1847→       └───────┬────────┘      └───────┬────────┘
+  1848→               │                       │
+  1849→               └───────────┬───────────┘
+  1850→                           ▼
+  1851→                  ┌─────────────────┐
+  1852→                  │ Application API │
+  1853→                  └────────┬────────┘
+  1854→                           │
+  1855→             ┌─────────────┼─────────────┐
+  1856→             ▼             ▼             ▼
+  1857→        PostgreSQL       Redis       Object Storage
+  1858→```
+  1859→
+  1860→---
+  1861→
+  1862→# 61. Public Menu Rendering Strategy
+  1863→
+  1864→Prefer server-side rendering or static/hybrid rendering for public menus.
+  1865→
+  1866→Ideal flow:
+  1867→
+  1868→```text
+  1869→QR
+  1870→ ↓
+  1871→Edge
+  1872→ ↓
+  1873→Cached HTML
+  1874→ ↓
+  1875→Instant menu
+  1876→ ↓
+  1877→Hydrate interactive features
+  1878→```
+  1879→
+  1880→This provides better:
+  1881→
+  1882→- Performance
+  1883→- SEO
+  1884→- Social sharing
+  1885→- Low-end device compatibility
+  1886→
+  1887→---
+  1888→
+  1889→# 62. Menu Publishing Model
+  1890→
+  1891→Instead of exposing draft changes immediately, support:
+  1892→
+  1893→```text
+  1894→Draft
+  1895→   ↓
+  1896→Preview
+  1897→   ↓
+  1898→Publish
+  1899→   ↓
+  1900→Live
+  1901→```
+  1902→
+  1903→Restaurant managers can safely edit a menu without customers seeing incomplete changes.
+  1904→
+  1905→Optional future feature:
+  1906→
+  1907→```text
+  1908→Schedule publication
+  1909→```
+  1910→
+  1911→Example:
+  1912→
+  1913→```text
+  1914→Publish new menu
+  1915→Friday 18:00
+  1916→```
+  1917→
+  1918→---
+  1919→
+  1920→# 63. Versioning
+  1921→
+  1922→Menu versions should eventually be supported.
+  1923→
+  1924→Example:
+  1925→
+  1926→```text
+  1927→Version 12
+  1928→Version 13
+  1929→Version 14
+  1930→```
+  1931→
+  1932→Allow:
+  1933→
+  1934→```text
+  1935→View version
+  1936→Restore version
+  1937→Compare versions
+  1938→```
+  1939→
+  1940→This protects restaurants from accidental changes.
+  1941→
+  1942→---
+  1943→
+  1944→# 64. Promotions
+  1945→
+  1946→Future module:
+  1947→
+  1948→```text
+  1949→Promotion
+  1950→├── Discount
+  1951→├── Badge
+  1952→├── Featured
+  1953→├── Limited Time
+  1954→└── New
+  1955→```
+  1956→
+  1957→Example:
+  1958→
+  1959→```text
+  1960→🔥 20% OFF
+  1961→```
+  1962→
+  1963→Promotions may have:
+  1964→
+  1965→```text
+  1966→start_at
+  1967→end_at
+  1968→```
+  1969→
+  1970→---
+  1971→
+  1972→# 65. Customer Feedback
+  1973→
+  1974→Future module:
+  1975→
+  1976→Customers can optionally rate:
+  1977→
+  1978→```text
+  1979→Food
+  1980→Service
+  1981→Menu
+  1982→```
+  1983→
+  1984→But feedback should be carefully designed to prevent abuse.
+  1985→
+  1986→Potential feature:
+  1987→
+  1988→```text
+  1989→How was your experience?
+  1990→
+  1991→☆ ☆ ☆ ☆ ☆
+  1992→```
+  1993→
+  1994→---
+  1995→
+  1996→# 66. Future Online Ordering
+  1997→
+  1998→The data model should not prevent future ordering.
+  1999→
+  2000→Potential architecture:
+
+[showing lines 1-2000 of 2614; use offset=2001 with limit to continue reading]
