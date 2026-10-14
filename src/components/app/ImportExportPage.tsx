@@ -48,7 +48,7 @@ function parseCsv(text: string): Row[] {
   return rows;
 }
 
-export default function ImportExportPage({ tenant, locale }: { tenant: TenantSummary; role: string; locale: "fa" | "en" }) {
+export default function ImportExportPage({ tenant, role, locale }: { tenant: TenantSummary; role: string; locale: "fa" | "en" }) {
   const t = makeT(locale);
   const fa = locale === "fa";
   const canUse = ["OWNER", "ADMIN", "MANAGER", "EDITOR"].includes(role) && !["FREE"].includes(tenant.plan || "FREE");

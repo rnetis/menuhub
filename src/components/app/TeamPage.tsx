@@ -17,7 +17,7 @@ import { ShieldCheck, Trash2, Lock } from "lucide-react";
 
 interface Member { id: string; role: string; user: { id: string; name: string; email: string } }
 
-export default function TeamPage({ tenant, locale }: { tenant: TenantSummary; role: string; locale: "fa" | "en" }) {
+export default function TeamPage({ tenant, role, locale }: { tenant: TenantSummary; role: string; locale: "fa" | "en" }) {
   const t = makeT(locale);
   const fa = locale === "fa";
   const canManage = ["OWNER", "ADMIN"].includes(role);

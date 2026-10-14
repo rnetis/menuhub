@@ -64,7 +64,7 @@ export type Route =
   | { name: "admin" };
 
 export function parseHash(hash: string): Route {
-  const h = hash.replace(/^#/, "");
+  const h = hash.replace(/^#/, "").split("?")[0];
   const parts = h.split("/").filter(Boolean);
   if (parts.length === 0) return { name: "landing" };
   switch (parts[0]) {

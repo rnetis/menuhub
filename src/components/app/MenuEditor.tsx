@@ -485,7 +485,7 @@ function ItemDialog({ tenantId, currency, cats, defaultCat, item, onClose, onSav
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label>{t("menu.status")}</Label>
-                <Select value={form.status} onValueChange={(v) => set("status", v)}>
+                <Select value={form.status} onValueChange={(v) => set("status", v as typeof form.status)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="AVAILABLE">✅ {t("menu.available")}</SelectItem>

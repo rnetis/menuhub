@@ -98,6 +98,8 @@ async function main() {
     dairy?: boolean;
     egg?: boolean;
     image?: string;
+    availableFrom?: number;
+    availableTo?: number;
     variants?: [string, string, number][];
     addOns?: [string, string, number, boolean?][];
   }

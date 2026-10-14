@@ -112,7 +112,7 @@ export function BarChart({ data, max }: { data: { label: string; value: number }
   );
 }
 
-export function HBar({ label, value, max, right }: { label: string; value: number; max: number; right?: string }) {
+export function HBar({ label, value, max, right }: { label: React.ReactNode; value: number; max: number; right?: string }) {
   return (
     <div className="flex items-center gap-3">
       <span className="w-28 shrink-0 truncate text-sm">{label}</span>
